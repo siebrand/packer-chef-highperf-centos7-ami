@@ -4,10 +4,42 @@ set -o errexit -o nounset -o pipefail
 # Run from a CentOS or RHEL instance on AWS with a secondary 8GB EBS volume
 # ($DEVICE) attached to create a fresh installation of CentOS7 on $DEVICE.
 
+### Procedure to create an image on an additional volume on an existing instance:
+#
+# - Create an 8 GB volume in the same availability zone as your instance.
+# - Attach the volume to your instance.
+# - Log in to your instance and become root.
+# - yum install -y git # install git
+# - cd && git clone https://github.com/siebrand/packer-chef-highperf-centos7-ami.git # clone this repo in root's home
+# - cd packer-chef-highperf-centos7-ami # enter the repo's directory
+# - Find the volume using "lsblk". It's probaly named "xvdf"
+# - export DEVICE="/dev/xvdf" # export the DEVICE variable for this script
+# - ./create_base_ami.sh # start this script
+#
+# Wait until the script has completed. Can can take 10 minutes or so.
+#
 # When complete, convert the $DEVICE into an AMI by creating a snapshot of the
 # EBS volume and converting the snapshot into an AMI.  These steps can be done
 # with the AWS web console or using the CLI tools.
-
+#
+# How to create an AMI of the volume?
+#
+# - Detach the additional volume from the instance in the EC2 Dashboard menu
+#   Volumes.
+# - Create a snapshot of the detached volume by selecting it, and executing the
+#   action "Create Snapshot". Provide a useful description for the snapshot.
+# - Create an AMI of the created snapshot in the EC2 Dashboard menu Snapshots
+#   by selecting the snapshot and executing the action "Create Image". Provide
+#   the following values:
+#   - Name: Useful, short name.
+#   - Description: Description, more verbose, including for example the script name and repo URL used to create it.
+#   - Virtualisation type: Hardware-assisted vistualisation
+#
+# TODO:
+# - Ensure this image has all the latest features for AWS instances
+# - Document how the AMI for the base image is registered correctly, so it can be launched on M5/C5.
+#   packer takes care of this for its images, but for the base image, it needs some aws cli magic.
+#
 : ${DEVICE:?"ERROR: DEVICE must be set"}
 
 ROOTFS=/rootfs
@@ -26,9 +58,10 @@ mkdir -p "$ROOTFS"
 mount "$PARTITION" "$ROOTFS"
 
 rpm --root="$ROOTFS" --initdb
-rpm --root="$ROOTFS" -ivh \
+rpm --root="$ROOTFS" --nodeps -ivh \
   https://mirrors.edge.kernel.org/centos/7.5.1804/os/x86_64/Packages/centos-release-7-5.1804.el7.centos.x86_64.rpm
-yum --installroot="$ROOTFS" --nogpgcheck -y groupinstall core
+yum --installroot="$ROOTFS" --nogpgcheck -y update
+yum --installroot="$ROOTFS" --nogpgcheck -y groupinstall "Minimal Install"
 yum --installroot="$ROOTFS" --nogpgcheck -y install openssh-server grub2 tuned kernel chrony
 yum --installroot="$ROOTFS" -C -y remove NetworkManager firewalld --setopt="clean_requirements_on_remove=1"
 
