@@ -8,11 +8,9 @@ echo ">>> Installing things that Siebrand cares about"
 yum install -y bzip2 nfs-utils nmap screen tmpwatch tree zip
 
 echo ">>> Installing AWS cli"
-yum erase -y awscli python2-botocore python-s3transfer
-curl -sOL https://s3.amazonaws.com/aws-cli/awscli-bundle.zip
-unzip awscli-bundle.zip
-./awscli-bundle/install -i /usr/local/aws -b /bin/aws
-rm -rf awscli-bundle awscli-bundle.zip
+yum install -y python2-pip
+pip install --upgrade pip
+pip install awscli --upgrade
 
 echo ">>> Installing AWS CloudFormation Helper Scripts"
 /usr/bin/easy_install --script-dir /opt/aws/bin https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz
