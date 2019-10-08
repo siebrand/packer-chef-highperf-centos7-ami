@@ -7,6 +7,15 @@ yum -y install lvm2 xfsprogs python-setuptools yum-utils git wget tuned sysstat 
 echo ">>> Installing things that Siebrand cares about"
 yum install -y bzip2 nfs-utils nmap screen tmpwatch tree zip
 
+echo ">>> Installing EPEL-based sysadmin tools"
+if yum repolist | grep -q ^epel
+then
+    echo ">>>> EPEL is already installed"
+else
+    rpm -i https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+fi
+yum install -y atop bash-completion-extras htop iftop nload tcping jq
+
 echo ">>> Installing AWS cli"
 yum install -y python2-pip
 pip install --upgrade pip
@@ -18,12 +27,3 @@ for i in `/bin/ls -1 /opt/aws/bin/`
 do
     ln -sf /opt/aws/bin/$i /usr/bin/
 done
-
-echo ">>> Installing EPEL-based sysadmin tools"
-if yum repolist | grep -q ^epel
-then
-    echo ">>>> EPEL is already installed"
-else
-    rpm -i https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-fi
-yum install -y atop bash-completion-extras htop iftop nload tcping jq
