@@ -52,7 +52,7 @@ mount "$PARTITION" "$ROOTFS"
 
 rpm --root="$ROOTFS" --initdb
 rpm --root="$ROOTFS" --nodeps -ivh \
-  https://mirrors.edge.kernel.org/centos/7.6.1810/os/x86_64/Packages/centos-release-7-6.1810.2.el7.centos.x86_64.rpm
+  https://mirrors.edge.kernel.org/centos/7.7.1908/os/x86_64/Packages/centos-release-7-7.1908.0.el7.centos.x86_64.rpm
 yum --installroot="$ROOTFS" --nogpgcheck -y update
 yum --installroot="$ROOTFS" --nogpgcheck -y groupinstall "Minimal Install" \
   --exclude="iwl*firmware" \
